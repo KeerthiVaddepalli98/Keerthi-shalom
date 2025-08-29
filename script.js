@@ -1,25 +1,81 @@
-// THEME TOGGLE
+// ========================
+// THEME TOGGLE WITH ICON
+// ========================
 const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = themeToggle.querySelector('i');
+
 themeToggle.addEventListener('click', () => {
-  const next =
-    document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-  document.body.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-});
-// Initialize theme on load
-document.body.setAttribute(
-  'data-theme',
-  localStorage.getItem('theme') || 'light'
-);
+  const currentTheme = document.body.getAttribute('data-theme');
+  const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('theme', nextTheme);
 
-// AOS INITIALIZATION
+  // Swap icons
+  themeIcon.classList.toggle('fa-moon');
+  themeIcon.classList.toggle('fa-sun');
+});
+
+// Initialize theme on page load
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.body.setAttribute('data-theme', savedTheme);
+if (savedTheme === 'dark') {
+  themeIcon.classList.replace('fa-moon', 'fa-sun');
+}
+
+// ========================
+// AOS ANIMATION INITIALIZATION
+// ========================
 AOS.init({
-  duration: 800,
-  once: true,
+  duration: 1000,   // smooth 1s animations
+  once: true,       // animate only once per section
+  offset: 100,      // trigger before element is fully in view
 });
 
-// SET SKILL BAR LEVELS
-document.querySelectorAll('.skill-bar').forEach((bar) => {
-  const level = bar.getAttribute('data-level') || '0%';
-  bar.style.setProperty('--level', level);
+// ========================
+// SKILL BARS DYNAMIC FILL
+// ========================
+const skillBars = document.querySelectorAll('.skill-bar');
+
+function fillSkillBars() {
+  skillBars.forEach((bar) => {
+    const fill = bar.querySelector('.fill');
+    const level = bar.getAttribute('data-level') || '0%';
+
+    // Animate width smoothly
+    fill.style.width = level;
+
+    // Optional: Change color dynamically
+    if (parseInt(level) >= 85) fill.style.backgroundColor = '#4CAF50'; // green
+    else if (parseInt(level) >= 70) fill.style.backgroundColor = '#FFC107'; // yellow
+    else fill.style.backgroundColor = '#FF5722'; // red
+  });
+}
+
+// Animate skill bars only when in viewport
+function isInViewport(element) {
+  const rect = element.getBoundingClientRect();
+  return rect.top <= window.innerHeight && rect.bottom >= 0;
+}
+
+function animateSkillsOnScroll() {
+  skillBars.forEach((bar) => {
+    if (isInViewport(bar) && !bar.classList.contains('animated')) {
+      fillSkillBars();
+      bar.classList.add('animated'); // avoid re-animation
+    }
+  });
+}
+
+window.addEventListener('scroll', animateSkillsOnScroll);
+window.addEventListener('load', animateSkillsOnScroll);
+
+// ========================
+// SMOOTH SCROLL FOR NAV LINKS
+// ========================
+document.querySelectorAll('nav a').forEach((link) => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    target.scrollIntoView({ behavior: 'smooth' });
+  });
 });
